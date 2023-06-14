@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { constants } from './constants';
+import { constants } from '../helpers/constants';
 
 export const generateScene = (renderer) => {
   //CAMERA
@@ -20,6 +20,7 @@ export const generateScene = (renderer) => {
     constants.light.lightIntensity, 
     constants.light.lightDistance, 
     constants.light.lightDecay);
+  pointLight.position.set(4000, 0, 0);
   // const ambientLight = new THREE.AmbientLight(0xffffff);
   scene.add(pointLight);
 

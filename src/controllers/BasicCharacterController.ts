@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { BasicCharacterControllerInput } from './BasicCharacterControllerInput.ts';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { constants } from './constants.ts'
-import { updateLoading } from './store.ts';
+import { constants } from '../helpers/constants.ts'
+import { updateLoading } from '../store/store.ts';
 
 export class BasicCharacterController {
   params: any;
@@ -17,7 +17,6 @@ export class BasicCharacterController {
   rotationMultiplier: number;
   minimapScene: THREE.Scene;
   minimapTarget: THREE.Scene;
-
   constructor(params) {
     this.init(params);
   }
@@ -29,10 +28,12 @@ export class BasicCharacterController {
     this.position = new THREE.Vector3();
     this.tmpQuaternion = new THREE.Quaternion();
     this.minimapTarget = new THREE.Scene();
+    this.minimapScene = this.params.minimapScene;
 
     const loader = new GLTFLoader();
     this.loadCharacter(loader).then((spaceship: THREE.Scene) => {
       spaceship.position.copy(constants.ship.startingPosition);
+      spaceship.rotation.copy(constants.ship.startingRotation);
       this.target = spaceship;
       this.target.name = 'spaceship'
       this.target.traverse((child) => {
@@ -50,23 +51,9 @@ export class BasicCharacterController {
           child.material = new THREE.MeshBasicMaterial({ color: '#39FF14' });
         }
       })
-      this.minimapTarget.scale.set(250, 250, 250);
-      this.params.minimapScene.add(this.minimapTarget);
+      this.minimapTarget.scale.set(300, 300, 300);
+      this.minimapScene.add(this.minimapTarget);
     });
-
-    this.loadAsteroid(loader).then((ast: THREE.Scene) => {
-      for (let i=0; i<100; i++) {
-        const asteroid = ast.clone();
-        asteroid.scale.set(100,100,100)
-        const [x, y, z] = Array(3).fill(0).map(() => THREE.MathUtils.randFloatSpread(8000));
-        asteroid.position.set(x, y, z);
-        this.params.scene.add(asteroid);
-
-        const minimapAsteroid = asteroid.clone();
-        this.params.minimapScene.add(minimapAsteroid);
-      }
-      updateLoading();
-    })
 
     document.addEventListener('keydown', (e) => {
       this.input.onKeyDown(e);
@@ -79,14 +66,6 @@ export class BasicCharacterController {
   loadCharacter(loader: GLTFLoader) {
     return new Promise((resolve, reject) => {
       loader.load('/assets/spaceship_nortend/scene.gltf', (gltf) => resolve(gltf.scene),
-      undefined,
-      (error) => reject(error));
-    });
-  }
-
-  loadAsteroid(loader: GLTFLoader) {
-    return new Promise((resolve, reject) => {
-      loader.load('/assets/asteroid/scene.gltf', (gltf) => resolve(gltf.scene),
       undefined,
       (error) => reject(error));
     });
@@ -154,6 +133,7 @@ export class BasicCharacterController {
       this.target.quaternion.multiply( this.tmpQuaternion );
 
       this.position.copy(this.target.position);
+      console.log(this.target.position)
       this.minimapTarget.position.copy(this.target.position);
       this.minimapTarget.quaternion.copy(this.target.quaternion);
       // this.target.quaternion.copy(this.tmpQuaternion)

@@ -15,45 +15,31 @@ export const constants = {
     visionDepth: 10000,
   },
   light: {
-    lightIntensity: 0.5, //expects a float default 1
-    lightDistance: 10000, 
-    lightDecay: 2, // default 2
+    lightIntensity: 1, //expects a float default 1
+    lightDistance: 100000, 
+    lightDecay: 1, // default 2
     bloompassStrength: 2, // 0 to 3
     bloompassRadius: 0.1, // 0 to 1
     bloompassThreshold: 0.1 // 0 to 1
   },
   ship: {
-    startingPosition: new THREE.Vector3(500, 0, 940),
+    startingPosition: new THREE.Vector3(-250, 100, -700),
+    startingRotation: new THREE.Euler(0, 180, 0, 'XYZ'),
     deceleration: 0.5,
-    boostMultiplier: 20,
+    boostMultiplier: 10,
 
-    moveMultiplier: 0.07,
-    moveMultiplierX: 0.01,
+    moveMultiplier: 0.09,
+    moveMultiplierX: 0.05,
 
     rotationMultiplier: 0.01,
-  },
-  asteroid: {
-    startingPosition: new THREE.Vector3(500, 0, 900),
   },
   sun: {
     radius: 109,
   },
-  mars: {
-    radius: 150,
-    initialPosition: () => new THREE.Vector3(0, 0, 3000),
-    orbitRadius: () => constants.mars.initialPosition().distanceTo(new THREE.Vector3(0, 0, 0)),
-    orbitalSpeed: 0.00021,
-  },
   earth: {
-    radius: 100,
+    radius: 300,
     initialPosition: () => new THREE.Vector3(0, 0, 1700),
     orbitRadius: () => constants.earth.initialPosition().distanceTo(new THREE.Vector3(0, 0, 0)),
-    orbitalSpeed: 0.0002,
-  },
-  mercury: {
-    radius: 30.31,
-    initialPosition: () => new THREE.Vector3(0, 0, 900),
-    orbitRadius: () => constants.mercury.initialPosition().distanceTo(new THREE.Vector3(0, 0, 0)),
     orbitalSpeed: 0.0002,
   },
   stars: {

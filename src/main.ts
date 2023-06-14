@@ -1,12 +1,14 @@
 import './style.css'
 import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { generateScene } from './LightsCameraSceneComposer.ts'
-import { ThirdPersonCamera } from './ThirdPersonCamera.ts';
-import { BasicCharacterController } from './BasicCharacterController.ts';
-import { loadEarth, updateEarth, loadMars, updateMars, loadMercury, updateMercury, loadSun, loadStars, loadBlackHole } from './meshes.ts';
-import { constants } from './constants';
-import { getLoading } from './store.ts';
+import { generateScene } from './scenes/LightsCameraSceneComposer.ts'
+import { ThirdPersonCamera } from './controllers/ThirdPersonCamera.ts';
+import { BasicCharacterController } from './controllers/BasicCharacterController.ts';
+import { AsteroidController } from './controllers/AsteroidController.ts';
+import { loadEarth, updateEarth, loadSun, loadStars, loadBlackHole } from './mesh/meshes.ts';
+import { constants } from './helpers/constants.ts';
+import { getLoading } from './store/store.ts';
+import { generateMinimap } from './scenes/Minimap.ts';
 
 class app {
   renderer: THREE.WebGLRenderer;
@@ -16,6 +18,7 @@ class app {
   composer: EffectComposer;
   thirdPersonCamera: ThirdPersonCamera;
   characterControls: BasicCharacterController;
+  asteroidControls: AsteroidController;
   earth: THREE.Mesh<THREE.SphereGeometry, THREE.MeshStandardMaterial>;
   mars: THREE.Mesh<THREE.SphereGeometry, THREE.MeshStandardMaterial>;
   sun: THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial>;
@@ -33,7 +36,7 @@ class app {
     this.renderer = new THREE.WebGLRenderer({
       canvas: document.querySelector('#bg') as HTMLCanvasElement  
     });
-    this.renderer.setClearColor('gray', .1)
+    this.renderer.setClearColor('gray', .01);
     //RENDERER
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -47,33 +50,17 @@ class app {
     }, false);
 
     const { scene, camera, composer } = generateScene(this.renderer);
-
     this.camera = camera;
     this.scene = scene;
     this.composer = composer;
-    this.minimapScene = new THREE.Scene();
 
-    const pointLight = new THREE.PointLight(
-      0xffffff, 
-      20, 
-      constants.light.lightDistance, 
-      1);
-    // const ambientLight = new THREE.AmbientLight(0xffffff);
-    this.minimapScene.add(pointLight)
-    // left right top bottom near far
-    this.minimapCamera = new THREE.OrthographicCamera(10000 / -2, 10000 / 2, 8000 / 2, 8000 / -2, 0.1, 100000)
-    this.minimapCamera.position.set(0, 10000, 0);
-    this.minimapCamera.lookAt(0, 0, 0);
-
-    this.minimapRenderer = new THREE.WebGLRenderer({ antialias: true });
-    this.minimapRenderer.setSize(420, 300);
-    this.minimapRenderer.setClearColor('gray'); // Set the background color of the minimap
-    this.minimapRenderer.domElement.style.position = 'absolute';
-    this.minimapRenderer.domElement.style.bottom = '10px';
-
+    const { minimapScene, minimapCamera, minimapRenderer } = generateMinimap();
+    this.minimapScene = minimapScene;
+    this.minimapCamera = minimapCamera;
+    this.minimapRenderer = minimapRenderer;
     document.body.appendChild(this.minimapRenderer.domElement);
     
-    var axesHelper = new THREE.AxesHelper( 500 );
+    const axesHelper = new THREE.AxesHelper( 500 );
     this.scene.add( axesHelper );
 
 
@@ -87,13 +74,12 @@ class app {
   loadMeshes() {
     loadStars(this.scene);
     this.sun = loadSun();
-    // this.mercury = loadMercury();
-    // this.mars = loadMars();
-    // this.earth = loadEarth();
+    this.earth = loadEarth();
     this.blackHole = loadBlackHole();
-    this.scene.add(this.sun, this.blackHole);
+    this.scene.add(this.earth, this.sun, this.blackHole);
     const minimapSun = this.sun.clone();
-    this.minimapScene.add(minimapSun);
+    const minimapEarth = this.earth.clone();
+    this.minimapScene.add(minimapSun, minimapEarth);
    
     // special glowing box
     const geometry = new THREE.BoxGeometry(1, 1, 1);
@@ -106,6 +92,11 @@ class app {
   }
 
   loadModels() {
+    this.asteroidControls = new AsteroidController({
+      scene: this.scene,
+      minimapScene: this.minimapScene
+    })
+
     this.characterControls = new BasicCharacterController({
       camera: this.camera,
       scene: this.scene,
@@ -139,10 +130,9 @@ class app {
       el.style.opacity = this.opacity.toString();
     }
     const timeElapsedS = timeElapsed * 0.001;
-    // updateEarth(this.earth);
-    // updateMars(this.mars);
-    // updateMercury(this.mercury);
-    
+    updateEarth(this.earth);
+
+    if (this.asteroidControls) this.asteroidControls.update();
     if (this.characterControls) this.characterControls.update()
     if (this.thirdPersonCamera) this.thirdPersonCamera.update(timeElapsedS);
   }
