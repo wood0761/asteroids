@@ -1,3 +1,3 @@
-# animated-portfolio
+# asteroids 3D
 
-This is a THREE.js side-project turned portfolio
+Made with Three.js and Typescript
