@@ -28,22 +28,26 @@ class app {
   minimapRenderer: THREE.WebGLRenderer;
   minimapCamera: THREE.OrthographicCamera;
   minimapScene: THREE.Scene;
+  shipBB: THREE.Box3;
+  earthBB: THREE.Sphere;
   constructor() {
     this.init();
   }
 
   init() {
     this.renderer = new THREE.WebGLRenderer({
-      canvas: document.querySelector('#bg') as HTMLCanvasElement  
+      canvas: document.querySelector('#bg') as HTMLCanvasElement   
     });
     this.renderer.setClearColor('gray', .01);
-    //RENDERER
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.opacity = 0;
+    // this.opacity = 0;
     const info = document.querySelector("#info");
-    const textNode = document.createTextNode('Press W A S D to move, Q E to roll, ARROWS to look around, and MOUSE or SHIFT to BOOST.') 
-    info.appendChild(textNode)
+    const textNode = document.createTextNode('Press W A S D to move, Q E to roll, ARROWS to look around, and MOUSE or SHIFT to BOOST.'); 
+    info.appendChild(textNode);
+
+    this.earthBB = new THREE.Sphere();
+
     //RESIZE LISTENER
     window.addEventListener('resize', () => {
       this.onWindowResize();
@@ -75,6 +79,8 @@ class app {
     loadStars(this.scene);
     this.sun = loadSun();
     this.earth = loadEarth();
+    this.earthBB = new THREE.Sphere(this.earth.position, constants.earth.radius);
+
     this.blackHole = loadBlackHole();
     this.scene.add(this.earth, this.sun, this.blackHole);
     const minimapSun = this.sun.clone();
@@ -101,7 +107,7 @@ class app {
       camera: this.camera,
       scene: this.scene,
       renderer: this.renderer,
-      minimapScene: this.minimapScene
+      minimapScene: this.minimapScene,
     });
 
     this.thirdPersonCamera = new ThirdPersonCamera({
@@ -124,16 +130,15 @@ class app {
   }
 
   step(timeElapsed: number) {
-    if (!getLoading() && this.opacity < 1) {
-      let el = document.getElementById('curtain');
-      this.opacity = this.opacity + 0.01;
-      el.style.opacity = this.opacity.toString();
-    }
+    // if (!getLoading() && this.opacity < 1) {
+    //   let el = document.getElementById('curtain');
+    //   this.opacity = this.opacity + 0.01;
+    //   el.style.opacity = this.opacity.toString();
+    // }
     const timeElapsedS = timeElapsed * 0.001;
     updateEarth(this.earth);
-
     if (this.asteroidControls) this.asteroidControls.update();
-    if (this.characterControls) this.characterControls.update()
+    if (this.characterControls) this.characterControls.update(this.earthBB)
     if (this.thirdPersonCamera) this.thirdPersonCamera.update(timeElapsedS);
   }
 

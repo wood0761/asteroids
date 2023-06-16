@@ -1,5 +1,5 @@
 export class BasicCharacterControllerInput {
-  keys: { forward: number; back: number; left: number; right: number; space: number; shift: number; pitchUp: number; pitchDown: number; yawLeft: number; yawRight: number; rollLeft: number; rollRight: number; up: number; down: number;};
+  keys: { shoot: number, forward: number; back: number; left: number; right: number; space: number; shift: number; pitchUp: number; pitchDown: number; yawLeft: number; yawRight: number; rollLeft: number; rollRight: number; up: number; down: number;};
   constructor() {
     this.init();    
   }
@@ -20,6 +20,7 @@ export class BasicCharacterControllerInput {
       rollRight: 0,
       up: 0,
       down: 0,
+      shoot: 0,
     };
     // document.addEventListener('keydown', (e) => this._onKeyDown(e), false);
     // document.addEventListener('keyup', (e) => this._onKeyUp(e), false);
@@ -34,7 +35,7 @@ export class BasicCharacterControllerInput {
       case 'KeyS': this.keys.back = 1; break;
       case 'KeyA': this.keys.left = 1; break;
       case 'KeyD': this.keys.right = 1; break;
-      // case 'KeyR': this.keys.up = 1; break;
+      case 'KeyR': this.keys.shoot = 1; break;
       // case 'KeyF': this.keys.down = 1; break;
       case 'ArrowUp': this.keys.pitchUp = 1; break;
       case 'ArrowDown': this.keys.pitchDown = 1; break;
@@ -55,7 +56,7 @@ export class BasicCharacterControllerInput {
       case 'KeyS': this.keys.back = 0; break;
       case 'KeyA': this.keys.left = 0; break;
       case 'KeyD': this.keys.right = 0; break;
-      // case 'KeyR': this.keys.up = 0; break;
+      case 'KeyR': this.keys.shoot = 0; break;
       // case 'KeyF': this.keys.down = 0; break;
       case 'ArrowUp': this.keys.pitchUp = 0; break;
       case 'ArrowDown': this.keys.pitchDown = 0; break;

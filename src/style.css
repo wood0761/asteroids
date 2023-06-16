@@ -21,7 +21,7 @@ canvas {
   opacity: 0.6;
 }
 
-#curtain {
+/* #curtain {
   position: absolute;
   top: 0;
   left: 0;
@@ -29,4 +29,4 @@ canvas {
   height: 100%;
   background-color: black;
   opacity: 0;
-}
+} */

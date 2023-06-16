@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { BasicCharacterControllerInput } from './BasicCharacterControllerInput.ts';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { constants } from '../helpers/constants.ts'
+import { Blaster } from './Blaster.ts'
 import { updateLoading } from '../store/store.ts';
 
 export class BasicCharacterController {
@@ -17,6 +18,7 @@ export class BasicCharacterController {
   rotationMultiplier: number;
   minimapScene: THREE.Scene;
   minimapTarget: THREE.Scene;
+  balls: any;
   constructor(params) {
     this.init(params);
   }
@@ -29,7 +31,7 @@ export class BasicCharacterController {
     this.tmpQuaternion = new THREE.Quaternion();
     this.minimapTarget = new THREE.Scene();
     this.minimapScene = this.params.minimapScene;
-
+    this.balls = new Blaster({scene: this.params.scene})
     const loader = new GLTFLoader();
     this.loadCharacter(loader).then((spaceship: THREE.Scene) => {
       spaceship.position.copy(constants.ship.startingPosition);
@@ -44,6 +46,7 @@ export class BasicCharacterController {
       });
       this.target.scale.set(0.4, 0.4, 0.4);
       this.params.scene.add(this.target);
+      // this.params.shipBB = new THREE.Box3().setFromObject(this.target);
 
       this.minimapTarget = this.target.clone();
       this.minimapTarget.traverse((child) => {
@@ -85,7 +88,11 @@ export class BasicCharacterController {
     return this.target?.quaternion;
   }
 
-  update() {
+  shoot() {
+    this.balls.addOne({target: this.target});
+  }
+
+  update(earthBB) {
     const controlObject = this.target;
 		const moveVector = new THREE.Vector3( 0, 0, 0 );
 		const rotationVector = new THREE.Vector3( 0, 0, 0 );
@@ -99,6 +106,8 @@ export class BasicCharacterController {
     // if (this.input.keys.shift && !this.input.keys.shift) this.rotationMultiplier *= constants.ship.boostMultiplier;
 
     if (controlObject) {
+      if (this.input.keys.shoot) this.shoot();
+
       moveVector.x = ( - this.input.keys.left + this.input.keys.right );
 			moveVector.y = ( - this.input.keys.down + this.input.keys.up);
 			moveVector.z = ( - this.input.keys.forward + this.input.keys.back);
@@ -131,11 +140,19 @@ export class BasicCharacterController {
 
       this.target.quaternion.normalize();
       this.target.quaternion.multiply( this.tmpQuaternion );
-
       this.position.copy(this.target.position);
-      console.log(this.target.position)
+      
       this.minimapTarget.position.copy(this.target.position);
       this.minimapTarget.quaternion.copy(this.target.quaternion);
+
+      this.balls.update();
+      if (this.target.position.distanceTo(earthBB.center) < earthBB.radius) {
+        console.log('hit')
+      }
+    }
+  }s
+};
+
       // this.target.quaternion.copy(this.tmpQuaternion)
       // const EPS = 0.000001;
 
@@ -151,6 +168,3 @@ export class BasicCharacterController {
       //   this.position.copy(this.target.position);
 
 			// }
-    }
-  }
-};

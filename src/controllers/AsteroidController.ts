@@ -13,7 +13,7 @@ export class AsteroidController {
 
   init(params) {
     this.params = params;
-    this.driftSpeed = 2;
+    this.driftSpeed = 5;
     this.entities = [];
     const loader = new GLTFLoader();
     this.loadAsteroid(loader).then((ast: THREE.Scene) => {
@@ -24,6 +24,9 @@ export class AsteroidController {
         asteroid.scale.set(scale,scale,scale);
         const [x, y, z] = Array(3).fill(0).map(() => THREE.MathUtils.randFloatSpread(8000));
         asteroid.position.set(x, y, z);
+
+        // BOUDING BOX FOR COLLISION DETECTION
+        const asteroidBB = new THREE.Box3().setFromObject(asteroid);
         
         this.params.scene.add(asteroid);
 
