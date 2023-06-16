@@ -13,7 +13,7 @@ export class AsteroidController {
 
   init(params) {
     this.params = params;
-    this.driftSpeed = 5;
+    this.driftSpeed = 0.5;
     this.entities = [];
     const loader = new GLTFLoader();
     this.loadAsteroid(loader).then((ast: THREE.Scene) => {

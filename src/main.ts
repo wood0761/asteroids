@@ -30,6 +30,7 @@ class app {
   minimapScene: THREE.Scene;
   shipBB: THREE.Box3;
   earthBB: THREE.Sphere;
+  raycaster: THREE.Raycaster;
   constructor() {
     this.init();
   }
@@ -66,8 +67,7 @@ class app {
     
     const axesHelper = new THREE.AxesHelper( 500 );
     this.scene.add( axesHelper );
-
-
+    this.raycaster = new THREE.Raycaster();
     this.previousRAF = null;
 
     this.loadMeshes();
@@ -121,6 +121,12 @@ class app {
       if (this.previousRAF === null) this.previousRAF = t;
       this.RAF();
 
+      // this.raycaster.setFromCamera( new THREE.Vector2(), this.camera );
+
+      // const interesctions = this.raycaster.intersectObjects( this.scene.children );
+      // for ( let i = 0; i < interesctions.length; i ++ ) {
+      //   console.log(interesctions[i].object)
+      // }
       this.composer.render();
       this.minimapRenderer.render(this.minimapScene, this.minimapCamera);
 

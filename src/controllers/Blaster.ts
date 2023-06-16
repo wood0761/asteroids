@@ -29,7 +29,6 @@ export class Blaster {
     this.balls.forEach(({ball, trajectory, quaternion}) => {
       const direction = new THREE.Vector3(0, 0, -1);
       direction.applyQuaternion(quaternion);
-      direction.normalize();
       trajectory.add(direction);
       ball.position.copy(trajectory);
 
