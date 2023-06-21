@@ -5,11 +5,13 @@ import { generateScene } from './scenes/LightsCameraSceneComposer.ts'
 import { ThirdPersonCamera } from './controllers/ThirdPersonCamera.ts';
 import { BasicCharacterController } from './controllers/BasicCharacterController.ts';
 import { AsteroidController } from './controllers/AsteroidController.ts';
+import { Blaster } from './controllers/Blaster.ts';
 import { loadEarth, updateEarth, loadSun, loadStars, loadBlackHole } from './mesh/meshes.ts';
 import { constants } from './helpers/constants.ts';
 import { getLoading } from './store/store.ts';
 import { generateMinimap } from './scenes/Minimap.ts';
-import { getBlasterEntities } from './store/store.ts';
+import { BasicCharacterControllerInput } from './controllers/BasicCharacterControllerInput.ts';
+
 class app {
   renderer: THREE.WebGLRenderer;
   camera: THREE.PerspectiveCamera;
@@ -32,8 +34,14 @@ class app {
   earthBB: THREE.Sphere;
   raycaster: THREE.Raycaster;
   asteroidEntities: any;
+  blaster: Blaster;
+  input: BasicCharacterControllerInput;
+  cooldown: number;
+
   constructor() {
     this.asteroidEntities = [];
+    this.input = new BasicCharacterControllerInput();
+    this.cooldown = 0;
     this.init();
   }
 
@@ -119,13 +127,15 @@ class app {
       camera: this.camera,
       target: this.characterControls,
     });
+
+    this.blaster = new Blaster({ scene: this.scene })
+
   }
  
   RAF() {
     requestAnimationFrame((t) => {
       if (this.previousRAF === null) this.previousRAF = t;
       this.RAF();
-
       // this.raycaster.setFromCamera( new THREE.Vector2(), this.camera );
 
       // const interesctions = this.raycaster.intersectObjects( this.scene.children );
@@ -146,32 +156,26 @@ class app {
     //   this.opacity = this.opacity + 0.01;
     //   el.style.opacity = this.opacity.toString();
     // }
-
-    //EARTH BB COLLISION
-    // if (this.target.position.distanceTo(this.earthBB.center) < this.earthBB.radius) {
-    //   console.log('hit')
-    // }
-    // console.log(this.asteroidEntities)
-    let blasterEntities = getBlasterEntities();
-    // console.log(blasterEntities)
     
-    this.asteroidEntities.forEach((asteroidEntity: any) => {  
-      if (asteroidEntity.asteroidBB.intersectsSphere(this.earthBB)) {
+    this.asteroidEntities.forEach(({asteroidBB}: any) => {  
+      if (asteroidBB.intersectsSphere(this.earthBB)) {
         console.log('EARTH HIT BY ASTEROID');
       }
-      blasterEntities.forEach((blasterEntity: any) => {
-        if (asteroidEntity.asteroidBB.intersectsSphere(blasterEntity.blastBB)) {
-          console.log('asteroid hid')
-          blasterEntity.blast.geometry.dispose();
-          blasterEntity.blast.material.dispose();
-        }
-      });
+      // blasterEntities.forEach(({blastBB, blast}: any) => {
+      //   if (asteroidBB.intersectsSphere(blastBB) || asteroidBB.containsPoint(blast.position)) {
+      //     console.log('asteroid hid')
+      //     // blast.geometry.dispose();
+      //     // blast.material.dispose();
+      //   }
+      // });
     })
+    // console.log(blasterEntities);
     const timeElapsedS = timeElapsed * 0.001;
     updateEarth(this.earth);
     if (this.asteroidControls) this.asteroidControls.update(this.asteroidEntities);
     if (this.characterControls) this.characterControls.update();
     if (this.thirdPersonCamera) this.thirdPersonCamera.update(timeElapsedS);
+    if (this.blaster) this.blaster.update();
   }
 
   onWindowResize() {

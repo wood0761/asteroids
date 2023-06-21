@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { BasicCharacterControllerInput } from './BasicCharacterControllerInput.ts';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { constants } from '../helpers/constants.ts'
-import { Blaster } from './Blaster.ts'
+import { constants } from '../helpers/constants.ts';
+import { EventBus } from '../helpers/eventBus.ts';
 import { updateLoading } from '../store/store.ts';
 
 export class BasicCharacterController {
@@ -18,8 +18,7 @@ export class BasicCharacterController {
   rotationMultiplier: number;
   minimapScene: THREE.Scene;
   minimapTarget: THREE.Scene;
-  balls: any;
-  cooldown: number;
+  // cooldown: number;
   constructor(params) {
     this.params = params;
     this.input = new BasicCharacterControllerInput();
@@ -28,8 +27,7 @@ export class BasicCharacterController {
     this.tmpQuaternion = new THREE.Quaternion();
     this.minimapTarget = new THREE.Scene();
     this.minimapScene = this.params.minimapScene;
-    this.balls = new Blaster({ scene: this.params.scene })
-    this.cooldown = 0;
+    // this.cooldown = 0;
     this.init();
   }
 
@@ -90,17 +88,12 @@ export class BasicCharacterController {
     return this.target?.quaternion;
   }
 
-  shoot() {
-    this.balls.addOne({ target: this.target});
-    this.cooldown = 10;
-  }
-
   update() {
     const controlObject = this.target;
 		const moveVector = new THREE.Vector3( 0, 0, 0 );
 		const rotationVector = new THREE.Vector3( 0, 0, 0 );
     
-    if (this.cooldown > 0) this.cooldown -= 1;
+    // if (this.cooldown > 0) this.cooldown -= 1;
     this.moveMultiplier = constants.ship.moveMultiplier;
     this.rotationMultiplier = constants.ship.rotationMultiplier;
 
@@ -110,7 +103,7 @@ export class BasicCharacterController {
     // if (this.input.keys.shift && !this.input.keys.shift) this.rotationMultiplier *= constants.ship.boostMultiplier;
 
     if (controlObject) {
-      if (this.input.keys.shoot && this.cooldown === 0) this.shoot();
+      if (this.input.keys.shoot) EventBus.publish('shoot', controlObject);
 
       moveVector.x = ( - this.input.keys.left + this.input.keys.right );
 			moveVector.y = ( - this.input.keys.down + this.input.keys.up);
@@ -148,8 +141,6 @@ export class BasicCharacterController {
       
       this.minimapTarget.position.copy(this.target.position);
       this.minimapTarget.quaternion.copy(this.target.quaternion);
-
-      this.balls.update();
 
     }
   }
