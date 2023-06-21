@@ -19,11 +19,8 @@ export class BasicCharacterController {
   minimapScene: THREE.Scene;
   minimapTarget: THREE.Scene;
   balls: any;
+  cooldown: number;
   constructor(params) {
-    this.init(params);
-  }
-
-  init(params) {
     this.params = params;
     this.input = new BasicCharacterControllerInput();
     this.velocity = new THREE.Vector3(0, 0, 0);
@@ -31,7 +28,12 @@ export class BasicCharacterController {
     this.tmpQuaternion = new THREE.Quaternion();
     this.minimapTarget = new THREE.Scene();
     this.minimapScene = this.params.minimapScene;
-    this.balls = new Blaster({scene: this.params.scene})
+    this.balls = new Blaster({ scene: this.params.scene })
+    this.cooldown = 0;
+    this.init();
+  }
+
+  init() {
     const loader = new GLTFLoader();
     this.loadCharacter(loader).then((spaceship: THREE.Scene) => {
       spaceship.position.copy(constants.ship.startingPosition);
@@ -89,14 +91,16 @@ export class BasicCharacterController {
   }
 
   shoot() {
-    this.balls.addOne({target: this.target});
+    this.balls.addOne({ target: this.target});
+    this.cooldown = 10;
   }
 
-  update(earthBB) {
+  update() {
     const controlObject = this.target;
 		const moveVector = new THREE.Vector3( 0, 0, 0 );
 		const rotationVector = new THREE.Vector3( 0, 0, 0 );
-
+    
+    if (this.cooldown > 0) this.cooldown -= 1;
     this.moveMultiplier = constants.ship.moveMultiplier;
     this.rotationMultiplier = constants.ship.rotationMultiplier;
 
@@ -106,7 +110,7 @@ export class BasicCharacterController {
     // if (this.input.keys.shift && !this.input.keys.shift) this.rotationMultiplier *= constants.ship.boostMultiplier;
 
     if (controlObject) {
-      if (this.input.keys.shoot) this.shoot();
+      if (this.input.keys.shoot && this.cooldown === 0) this.shoot();
 
       moveVector.x = ( - this.input.keys.left + this.input.keys.right );
 			moveVector.y = ( - this.input.keys.down + this.input.keys.up);
@@ -146,11 +150,9 @@ export class BasicCharacterController {
       this.minimapTarget.quaternion.copy(this.target.quaternion);
 
       this.balls.update();
-      if (this.target.position.distanceTo(earthBB.center) < earthBB.radius) {
-        console.log('hit')
-      }
+
     }
-  }s
+  }
 };
 
       // this.target.quaternion.copy(this.tmpQuaternion)

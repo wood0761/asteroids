@@ -28,7 +28,8 @@ export const constants = {
     deceleration: 0.5,
     boostMultiplier: 10,
 
-    moveMultiplier: 0.09,
+    // moveMultiplier: 0.09,
+    moveMultiplier: 2,
     moveMultiplierX: 0.05,
 
     rotationMultiplier: 0.01,

@@ -9,7 +9,7 @@ import { loadEarth, updateEarth, loadSun, loadStars, loadBlackHole } from './mes
 import { constants } from './helpers/constants.ts';
 import { getLoading } from './store/store.ts';
 import { generateMinimap } from './scenes/Minimap.ts';
-
+import { getBlasterEntities } from './store/store.ts';
 class app {
   renderer: THREE.WebGLRenderer;
   camera: THREE.PerspectiveCamera;
@@ -31,7 +31,9 @@ class app {
   shipBB: THREE.Box3;
   earthBB: THREE.Sphere;
   raycaster: THREE.Raycaster;
+  asteroidEntities: any;
   constructor() {
+    this.asteroidEntities = [];
     this.init();
   }
 
@@ -88,19 +90,22 @@ class app {
     this.minimapScene.add(minimapSun, minimapEarth);
    
     // special glowing box
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
+    const geometry = new THREE.BoxGeometry(200, 200, 200);
     const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
     const cube = new THREE.Mesh(geometry, material);
     cube.position.set(500, 0, 930)
     // Add the cube to the scene
     this.scene.add(cube);
+    const minmapCube = cube.clone();
+    this.minimapScene.add(minmapCube);
 
   }
 
   loadModels() {
     this.asteroidControls = new AsteroidController({
       scene: this.scene,
-      minimapScene: this.minimapScene
+      minimapScene: this.minimapScene,
+      asteroidEntities: this.asteroidEntities,
     })
 
     this.characterControls = new BasicCharacterController({
@@ -141,10 +146,31 @@ class app {
     //   this.opacity = this.opacity + 0.01;
     //   el.style.opacity = this.opacity.toString();
     // }
+
+    //EARTH BB COLLISION
+    // if (this.target.position.distanceTo(this.earthBB.center) < this.earthBB.radius) {
+    //   console.log('hit')
+    // }
+    // console.log(this.asteroidEntities)
+    let blasterEntities = getBlasterEntities();
+    // console.log(blasterEntities)
+    
+    this.asteroidEntities.forEach((asteroidEntity: any) => {  
+      if (asteroidEntity.asteroidBB.intersectsSphere(this.earthBB)) {
+        console.log('EARTH HIT BY ASTEROID');
+      }
+      blasterEntities.forEach((blasterEntity: any) => {
+        if (asteroidEntity.asteroidBB.intersectsSphere(blasterEntity.blastBB)) {
+          console.log('asteroid hid')
+          blasterEntity.blast.geometry.dispose();
+          blasterEntity.blast.material.dispose();
+        }
+      });
+    })
     const timeElapsedS = timeElapsed * 0.001;
     updateEarth(this.earth);
-    if (this.asteroidControls) this.asteroidControls.update();
-    if (this.characterControls) this.characterControls.update(this.earthBB)
+    if (this.asteroidControls) this.asteroidControls.update(this.asteroidEntities);
+    if (this.characterControls) this.characterControls.update();
     if (this.thirdPersonCamera) this.thirdPersonCamera.update(timeElapsedS);
   }
 

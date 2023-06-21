@@ -6,15 +6,13 @@ import { updateLoading } from '../store/store.ts';
 export class AsteroidController {
   params: any;
   driftSpeed: number;
-  entities: any[];
   constructor(params) {
+    this.params = params;
+    this.driftSpeed = 0.5;
     this.init(params);
   }
 
   init(params) {
-    this.params = params;
-    this.driftSpeed = 0.5;
-    this.entities = [];
     const loader = new GLTFLoader();
     this.loadAsteroid(loader).then((ast: THREE.Scene) => {
       ast.name = 'asteroid';
@@ -27,14 +25,14 @@ export class AsteroidController {
 
         // BOUDING BOX FOR COLLISION DETECTION
         const asteroidBB = new THREE.Box3().setFromObject(asteroid);
-        
+
         this.params.scene.add(asteroid);
 
         const minimapAsteroid = asteroid.clone();
         this.params.minimapScene.add(minimapAsteroid);
 
         const driftDirection = this.getRandomDriftDirection();
-        this.entities.push({ asteroid, minimapAsteroid, driftDirection });
+        params.asteroidEntities.push({ asteroid, minimapAsteroid, driftDirection, asteroidBB });
 
       }
       updateLoading();
@@ -58,16 +56,16 @@ export class AsteroidController {
     return new THREE.Vector3(x, y, z).normalize();
   }
 
-  update() {
-    for (let i=0; i<this.entities.length; i++) {
-      let [x, y, z] = this.entities[i].asteroid.position.toArray();
+  update(asteroidEntities) {
+    for (let i=0; i<asteroidEntities.length; i++) {
+      let [x, y, z] = asteroidEntities[i].asteroid.position.toArray();
       if (Math.abs(x) > 4000) x = -x;
       if (Math.abs(y) > 4000) y = -y;
       if (Math.abs(z) > 4000) z = -z;
-      this.entities[i].asteroid.rotation.y += 0.005;
-      this.entities[i].asteroid.position.set(x, y, z);
-      this.entities[i].asteroid.position.addScaledVector(this.entities[i].driftDirection, this.driftSpeed)
-      this.entities[i].minimapAsteroid.position.copy(this.entities[i].asteroid.position);
+      asteroidEntities[i].asteroid.rotation.y += 0.005;
+      asteroidEntities[i].asteroid.position.set(x, y, z);
+      asteroidEntities[i].asteroid.position.addScaledVector(asteroidEntities[i].driftDirection, this.driftSpeed)
+      asteroidEntities[i].minimapAsteroid.position.copy(asteroidEntities[i].asteroid.position);
     }
   }
 };

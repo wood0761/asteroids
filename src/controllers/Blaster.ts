@@ -1,39 +1,42 @@
 import * as THREE from 'three';
+import { getBlasterEntities } from '../store/store';
 
 export class Blaster {
-  balls: any;
+  entities: any;
   scene: THREE.Scene;
   constructor(params) {
-    console.log(params)
-    this.balls = [];
+    this.entities = getBlasterEntities();
     this.scene = params.scene;
   }
 
   addOne(params) {
-    const ball = new THREE.Mesh(
+    const blast = new THREE.Mesh(
       new THREE.SphereGeometry(0.1, 8, 8),
       new THREE.MeshBasicMaterial({ color: '#39FF14' }));
     const offset = new THREE.Vector3(0, -1, -5);
     offset.applyQuaternion(params.target.quaternion);
     offset.add(params.target.position);
-    ball.position.copy(offset);  
+    blast.position.copy(offset);  
+    this.scene.add(blast);
 
-    this.scene.add(ball);
+    const blastBB = new THREE.Sphere(blast.position, 1);
     const tmpQuaternion = params.target.quaternion.clone();
-    const thingz = { ball, trajectory: offset, quaternion: tmpQuaternion}
-    this.balls.push(thingz);
+    const entity = { blast, offset, quaternion: tmpQuaternion, blastBB };
+    this.entities.push(entity);
   }
 
   update() {
-    if (!this.balls.length) return;
-    this.balls.forEach(({ball, trajectory, quaternion}) => {
-      const direction = new THREE.Vector3(0, 0, -1);
+    if (!this.entities.length) return;
+    this.entities.forEach(({blast, offset, quaternion}, index) => {
+      if (index > 10) {
+        this.entities[0].blast.geometry.dispose();
+        this.entities.shift();
+      }
+      const direction = new THREE.Vector3(0, 0, -10);
       direction.applyQuaternion(quaternion);
-      trajectory.add(direction);
-      ball.position.copy(trajectory);
-
+      offset.add(direction);
+      blast.position.copy(offset);
     })
   }
-
 }
 
