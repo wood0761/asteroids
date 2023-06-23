@@ -30,22 +30,48 @@ export class Blaster {
     this.entities.push(entity);
   }
 
-  update() {
+  checkCollision(blast, asteroid) {
+    const dx = blast.center.x - asteroid.center.x;
+    const dy = blast.center.y - asteroid.center.y;
+    const dz = blast.center.z - asteroid.center.z;
+    const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    return distance < blast.radius + asteroid.radius;
+  }
+
+  update(asteroidEntities) {
     this.time = this.clock.getElapsedTime();
     if (!this.entities.length) return;
-    this.entities.forEach(({blast, offset, quaternion, startTime}, index) => {
-      const direction = new THREE.Vector3(0, 0, -10);
-      direction.applyQuaternion(quaternion);
-      offset.add(direction);
-      blast.position.copy(offset);
 
-      if (startTime + 5 < this.time) {
-        this.entities[0].blast.geometry.dispose();
-        this.entities[0].blast.material.dispose();
-        this.entities.shift();
+    this.entities.forEach(({blast, offset, quaternion, startTime, blastBB}, i) => {
+      if (startTime + 5 > this.time) {
+        const direction = new THREE.Vector3(0, 0, -10);
+        direction.applyQuaternion(quaternion);
+        offset.add(direction);
+        blast.position.copy(offset);
+
+        asteroidEntities.forEach(({asteroid, asteroidBB}) => {
+          if (this.checkCollision(blastBB, asteroidBB)) {
+            console.log('asteroid hit')
+            EventBus.publish('asteroidHit', {asteroid, asteroidBB, blast});
+            this.cleanup(blast, i)
+          }
+        })
+
+      } else {
+        this.cleanup(blast, i);
       }
     })
-    console.log(this.entities)
+  }
+
+  explode(blast) {
+
+  }
+
+  cleanup(blast, i) {
+    blast.geometry.dispose();
+    blast.material.dispose(); 
+    this.scene.remove(blast);
+    this.entities.splice(i, 1);
   }
 }
 

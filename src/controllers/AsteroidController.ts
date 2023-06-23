@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { constants } from '../helpers/constants.ts'
 import { updateLoading } from '../store/store.ts';
-
 export class AsteroidController {
   params: any;
   driftSpeed: number;
@@ -15,16 +14,17 @@ export class AsteroidController {
   init(params) {
     const loader = new GLTFLoader();
     this.loadAsteroid(loader).then((ast: THREE.Scene) => {
-      ast.name = 'asteroid';
       for (let i=0; i<10; i++) {
+        ast.name = `asteroid${i}`;
+
         const asteroid = ast.clone();
         const scale = this.randomIntFromInterval(85, 250);
         asteroid.scale.set(scale,scale,scale);
         const [x, y, z] = Array(3).fill(0).map(() => THREE.MathUtils.randFloatSpread(8000));
         asteroid.position.set(x, y, z);
 
-        // BOUDING BOX FOR COLLISION DETECTION
-        const asteroidBB = new THREE.Box3().setFromObject(asteroid);
+        // BOUDING SPHERE FOR COLLISION DETECTION
+        const asteroidBB = new THREE.Sphere(asteroid.position, scale)
 
         this.params.scene.add(asteroid);
 

@@ -8,9 +8,9 @@ import { AsteroidController } from './controllers/AsteroidController.ts';
 import { Blaster } from './controllers/Blaster.ts';
 import { loadEarth, updateEarth, loadSun, loadStars, loadBlackHole } from './mesh/meshes.ts';
 import { constants } from './helpers/constants.ts';
-import { getLoading } from './store/store.ts';
+// import { getLoading } from './store/store.ts';
 import { generateMinimap } from './scenes/Minimap.ts';
-import { BasicCharacterControllerInput } from './controllers/BasicCharacterControllerInput.ts';
+import { ParticleSystem } from './controllers/ParticleSystem.ts'
 
 class app {
   renderer: THREE.WebGLRenderer;
@@ -30,18 +30,16 @@ class app {
   minimapRenderer: THREE.WebGLRenderer;
   minimapCamera: THREE.OrthographicCamera;
   minimapScene: THREE.Scene;
-  shipBB: THREE.Box3;
   earthBB: THREE.Sphere;
   raycaster: THREE.Raycaster;
   asteroidEntities: any;
   blaster: Blaster;
-  input: BasicCharacterControllerInput;
-  cooldown: number;
+  blasterEntities: any;
+  particleSystem: ParticleSystem;
 
   constructor() {
     this.asteroidEntities = [];
-    this.input = new BasicCharacterControllerInput();
-    this.cooldown = 0;
+    this.blasterEntities = [];
     this.init();
   }
 
@@ -128,7 +126,12 @@ class app {
       target: this.characterControls,
     });
 
-    this.blaster = new Blaster({ scene: this.scene })
+    this.blaster = new Blaster({ 
+      scene: this.scene, 
+      blasterEntities: this.blasterEntities 
+    });
+
+    this.particleSystem  = new ParticleSystem({scene: this.scene})
 
   }
  
@@ -151,31 +154,13 @@ class app {
   }
 
   step(timeElapsed: number) {
-    // if (!getLoading() && this.opacity < 1) {
-    //   let el = document.getElementById('curtain');
-    //   this.opacity = this.opacity + 0.01;
-    //   el.style.opacity = this.opacity.toString();
-    // }
-    
-    this.asteroidEntities.forEach(({asteroidBB}: any) => {  
-      if (asteroidBB.intersectsSphere(this.earthBB)) {
-        console.log('EARTH HIT BY ASTEROID');
-      }
-      // blasterEntities.forEach(({blastBB, blast}: any) => {
-      //   if (asteroidBB.intersectsSphere(blastBB) || asteroidBB.containsPoint(blast.position)) {
-      //     console.log('asteroid hid')
-      //     // blast.geometry.dispose();
-      //     // blast.material.dispose();
-      //   }
-      // });
-    })
-    // console.log(blasterEntities);
     const timeElapsedS = timeElapsed * 0.001;
     updateEarth(this.earth);
     if (this.asteroidControls) this.asteroidControls.update(this.asteroidEntities);
     if (this.characterControls) this.characterControls.update();
     if (this.thirdPersonCamera) this.thirdPersonCamera.update(timeElapsedS);
-    if (this.blaster) this.blaster.update();
+    if (this.blaster) this.blaster.update(this.asteroidEntities);
+    if (this.particleSystem) this.particleSystem.update();
   }
 
   onWindowResize() {
@@ -191,6 +176,8 @@ let _APP = null;
 window.addEventListener('DOMContentLoaded', () => {
   _APP = new app();
 });
+
+
 
 
 // function _LerpOverFrames(frames, t) {

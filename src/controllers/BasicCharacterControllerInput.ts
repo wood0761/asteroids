@@ -22,8 +22,6 @@ export class BasicCharacterControllerInput {
       down: 0,
       shoot: 0,
     };
-    // document.addEventListener('keydown', (e) => this._onKeyDown(e), false);
-    // document.addEventListener('keyup', (e) => this._onKeyUp(e), false);
   }
 
   onKeyDown(event) {

@@ -18,7 +18,7 @@ export class BasicCharacterController {
   rotationMultiplier: number;
   minimapScene: THREE.Scene;
   minimapTarget: THREE.Scene;
-  // cooldown: number;
+  cooldown: number;
   constructor(params) {
     this.params = params;
     this.input = new BasicCharacterControllerInput();
@@ -27,7 +27,7 @@ export class BasicCharacterController {
     this.tmpQuaternion = new THREE.Quaternion();
     this.minimapTarget = new THREE.Scene();
     this.minimapScene = this.params.minimapScene;
-    // this.cooldown = 0;
+    this.cooldown = 0;
     this.init();
   }
 
@@ -93,7 +93,7 @@ export class BasicCharacterController {
 		const moveVector = new THREE.Vector3( 0, 0, 0 );
 		const rotationVector = new THREE.Vector3( 0, 0, 0 );
     
-    // if (this.cooldown > 0) this.cooldown -= 1;
+    if (this.cooldown > 0) this.cooldown -= 1;
     this.moveMultiplier = constants.ship.moveMultiplier;
     this.rotationMultiplier = constants.ship.rotationMultiplier;
 
@@ -103,7 +103,10 @@ export class BasicCharacterController {
     // if (this.input.keys.shift && !this.input.keys.shift) this.rotationMultiplier *= constants.ship.boostMultiplier;
 
     if (controlObject) {
-      if (this.input.keys.shoot) EventBus.publish('shoot', controlObject);
+      if (this.input.keys.shoot && this.cooldown === 0) {
+        EventBus.publish('shoot', controlObject);
+        this.cooldown = 10;
+      }
 
       moveVector.x = ( - this.input.keys.left + this.input.keys.right );
 			moveVector.y = ( - this.input.keys.down + this.input.keys.up);
