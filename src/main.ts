@@ -10,7 +10,9 @@ import { loadEarth, updateEarth, loadSun, loadStars, loadBlackHole } from './mes
 import { constants } from './helpers/constants.ts';
 // import { getLoading } from './store/store.ts';
 import { generateMinimap } from './scenes/Minimap.ts';
-import { ParticleSystem } from './controllers/ParticleSystem.ts'
+import { ParticleSystem } from './controllers/ParticleSystem.ts';
+import { Explosion } from './controllers/explosion.ts'
+import { EventBus } from './helpers/eventBus.ts';
 
 class app {
   renderer: THREE.WebGLRenderer;
@@ -31,15 +33,18 @@ class app {
   minimapCamera: THREE.OrthographicCamera;
   minimapScene: THREE.Scene;
   earthBB: THREE.Sphere;
-  raycaster: THREE.Raycaster;
+  // raycaster: THREE.Raycaster;
   asteroidEntities: any;
   blaster: Blaster;
   blasterEntities: any;
   particleSystem: ParticleSystem;
-
+  // explosion: Explosion; 
+  explosionArray: Explosion[];
   constructor() {
     this.asteroidEntities = [];
     this.blasterEntities = [];
+    this.explosionArray = [];
+    EventBus.subscribe('asteroidHit', this.asteroidHit.bind(this));
     this.init();
   }
 
@@ -75,7 +80,10 @@ class app {
     
     const axesHelper = new THREE.AxesHelper( 500 );
     this.scene.add( axesHelper );
-    this.raycaster = new THREE.Raycaster();
+    // this.raycaster = new THREE.Raycaster();
+    // this.explosion = new Explosion({scene: this.scene});
+
+
     this.previousRAF = null;
 
     this.loadMeshes();
@@ -90,7 +98,7 @@ class app {
     this.earthBB = new THREE.Sphere(this.earth.position, constants.earth.radius);
 
     this.blackHole = loadBlackHole();
-    this.scene.add(this.earth, this.sun, this.blackHole);
+    this.scene.add(this.sun, this.blackHole);
     const minimapSun = this.sun.clone();
     const minimapEarth = this.earth.clone();
     this.minimapScene.add(minimapSun, minimapEarth);
@@ -161,12 +169,25 @@ class app {
     if (this.thirdPersonCamera) this.thirdPersonCamera.update(timeElapsedS);
     if (this.blaster) this.blaster.update(this.asteroidEntities);
     if (this.particleSystem) this.particleSystem.update();
+    // if (this.explosion) this.explosion.update();
+    if (this.explosionArray.length) this.explosionArray.forEach((exp) => exp.update());
+    console.log(this.explosionArray)
+    this.explosionArray = this.explosionArray.filter((exp) => exp.explosion);
+    // remove explosion from scene
   }
 
   onWindowResize() {
     this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
+  asteroidHit({blast, asteroid}) {
+    console.log(asteroid)
+    // console.log(blast)
+    const explosion = new Explosion({scene: this.scene});
+    explosion.makeParticles(blast);
+    this.explosionArray.push(explosion);
   }
 }
 

@@ -14,14 +14,14 @@ export class AsteroidController {
   init(params) {
     const loader = new GLTFLoader();
     this.loadAsteroid(loader).then((ast: THREE.Scene) => {
-      for (let i=0; i<10; i++) {
+      for (let i=0; i<1; i++) {
         ast.name = `asteroid${i}`;
 
         const asteroid = ast.clone();
         const scale = this.randomIntFromInterval(85, 250);
         asteroid.scale.set(scale,scale,scale);
-        const [x, y, z] = Array(3).fill(0).map(() => THREE.MathUtils.randFloatSpread(8000));
-        asteroid.position.set(x, y, z);
+        // const [x, y, z] = Array(3).fill(0).map(() => THREE.MathUtils.randFloatSpread(8000));
+        asteroid.position.set(500, 500, 500);
 
         // BOUDING SPHERE FOR COLLISION DETECTION
         const asteroidBB = new THREE.Sphere(asteroid.position, scale)
@@ -62,7 +62,7 @@ export class AsteroidController {
       if (Math.abs(x) > 4000) x = -x;
       if (Math.abs(y) > 4000) y = -y;
       if (Math.abs(z) > 4000) z = -z;
-      asteroidEntities[i].asteroid.rotation.y += 0.005;
+      asteroidEntities[i].asteroid.rotation.y += 0.0005;
       asteroidEntities[i].asteroid.position.set(x, y, z);
       asteroidEntities[i].asteroid.position.addScaledVector(asteroidEntities[i].driftDirection, this.driftSpeed)
       asteroidEntities[i].minimapAsteroid.position.copy(asteroidEntities[i].asteroid.position);

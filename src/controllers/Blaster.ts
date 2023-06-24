@@ -63,10 +63,6 @@ export class Blaster {
     })
   }
 
-  explode(blast) {
-
-  }
-
   cleanup(blast, i) {
     blast.geometry.dispose();
     blast.material.dispose(); 
