@@ -1,15 +1,5 @@
 import * as THREE from 'three';
 
-// sun diameter 865.3k miles = 8653
-// earth diameter 7.9175k miles = 79
-// earth distance to sun 94.362 million miles = 993620
-// jupiter distance to sun 460.71 million miles = 4607100
-// jupiter diameter 86.881 miles = 8688
-// for future reference a moon bloompass strength 1 radius 0.1 threshold 0.9
-// const earthStartZ = 940;
-// const marsStartZ = 4000;
-// const mercuryStartZ = 600;
-
 export const constants = {
   camera: {
     visionDepth: 10000,

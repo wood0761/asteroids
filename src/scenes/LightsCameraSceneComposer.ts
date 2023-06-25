@@ -15,14 +15,17 @@ export const generateScene = (renderer) => {
   const scene = new THREE.Scene();
 
   //LIGHTS 0xffffff, 1, 1000, 1
-  const pointLight = new THREE.PointLight(
-    0xffffff, 
-    constants.light.lightIntensity, 
-    constants.light.lightDistance, 
-    constants.light.lightDecay);
-  pointLight.position.set(4000, 0, 0);
+  // const pointLight = new THREE.PointLight(
+  //   0xffffff, 
+  //   constants.light.lightIntensity, 
+  //   constants.light.lightDistance, 
+  //   constants.light.lightDecay);
+  // pointLight.position.set(4000, 0, 0);
   // const ambientLight = new THREE.AmbientLight(0xffffff);
-  scene.add(pointLight);
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+  directionalLight.position.set(4000, 0, 0);
+  // directionalLight.target default is 0, 0, 0
+  scene.add(directionalLight);
 
   //BLOOMPASS
   const bloomPass = new UnrealBloomPass(
@@ -36,6 +39,6 @@ export const generateScene = (renderer) => {
   composer.addPass(new RenderPass(scene, camera));
   composer.addPass(bloomPass);
 
-  return { scene, camera, composer, light: pointLight };
+  return { scene, camera, composer, light: directionalLight };
 
 }

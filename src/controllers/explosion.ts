@@ -9,25 +9,20 @@ export class Explosion {
   spd: number;
   color: THREE.Color;
   scene: any;
-  // explosions: any;
   constructor(params) {
     this.scene = params.scene;
     this.particleGroup = new THREE.Group();
     this.explosion = false;
     this.particleTexture = new THREE.TextureLoader().load('explosion-single.png');
-    // this.numberParticles = Math.random() * 200 + 100;
-    this.numberParticles = 100;
+    this.numberParticles = 5;
     this.spd = 0.01;
     this.color = new THREE.Color();
     this.explosion = true;
 
-    // this.explosions = [];
-    // EventBus.subscribe('asteroidHit', this.makeParticles.bind(this));
-    // this.makeParticles();
+    this.makeParticles(params.blast, params.asteroid);
   }
 
-  makeParticles(blast) {
-    console.log(blast)
+  makeParticles(blast, asteroid) {
     // this.color.setHSL(Math.random(), 1, 0.5);
     for (let i=0; i<this.numberParticles; i++) {
       let particleMaterial = new THREE.SpriteMaterial({ 
@@ -46,11 +41,13 @@ export class Explosion {
       sprite.userData.velocity.multiplyScalar(Math.random() * Math.random() * 3 + 2);
 
       sprite.material.opacity = Math.random() * 0.2 + 0.8;
-
+      
       // let size = Math.random() * 0.1 + 0.1;
       let size = Math.random() * 0.1 + 2;
       // let size = 100;
       sprite.scale.set(size, size, size);
+      
+      sprite.userData.driftDirection = asteroid.userData.driftDirection.clone();
 
       this.particleGroup.add(sprite);
 
@@ -63,27 +60,17 @@ export class Explosion {
 
   update() {
     this.particleGroup.children.forEach((child) => {
-      if (child.type === 'Sprite') {
-        child.position.add(child.userData.velocity);
-        console.log(child.material)
+      if (child.type === 'Sprite') { 
         child.material.opacity -= 0.01;
-        
+        child.position.addScaledVector(child.userData.driftDirection, 0.55);
         if (child.material.opacity < 0.01) {
           this.particleGroup.remove(child);
         }
-        // console.log(child)
-        // console.log(child.material.opacity)
       }
     })
-
-    // let children = this.particleGroup.children.filter((child) => {
-    //   child.material.opacity > 0.0;
-    // });
-    // console.log(this.particleGroup)
     if (this.particleGroup.children.length === 0) {
       this.explosion = false;
+      this.scene.remove(this.particleGroup);
     }
-    // explosions = explosions.filter((exp) => exp.explosion);
   }
-
 }

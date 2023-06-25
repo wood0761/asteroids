@@ -26,12 +26,14 @@ export class AsteroidController {
         // BOUDING SPHERE FOR COLLISION DETECTION
         const asteroidBB = new THREE.Sphere(asteroid.position, scale)
 
+        const driftDirection = this.getRandomDriftDirection();
+        asteroid.userData.driftDirection = driftDirection;
+
         this.params.scene.add(asteroid);
 
         const minimapAsteroid = asteroid.clone();
         this.params.minimapScene.add(minimapAsteroid);
 
-        const driftDirection = this.getRandomDriftDirection();
         params.asteroidEntities.push({ asteroid, minimapAsteroid, driftDirection, asteroidBB });
 
       }
@@ -62,7 +64,7 @@ export class AsteroidController {
       if (Math.abs(x) > 4000) x = -x;
       if (Math.abs(y) > 4000) y = -y;
       if (Math.abs(z) > 4000) z = -z;
-      asteroidEntities[i].asteroid.rotation.y += 0.0005;
+      asteroidEntities[i].asteroid.rotation.y += 0.00005;
       asteroidEntities[i].asteroid.position.set(x, y, z);
       asteroidEntities[i].asteroid.position.addScaledVector(asteroidEntities[i].driftDirection, this.driftSpeed)
       asteroidEntities[i].minimapAsteroid.position.copy(asteroidEntities[i].asteroid.position);

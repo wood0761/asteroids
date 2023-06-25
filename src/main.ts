@@ -171,7 +171,6 @@ class app {
     if (this.particleSystem) this.particleSystem.update();
     // if (this.explosion) this.explosion.update();
     if (this.explosionArray.length) this.explosionArray.forEach((exp) => exp.update());
-    console.log(this.explosionArray)
     this.explosionArray = this.explosionArray.filter((exp) => exp.explosion);
     // remove explosion from scene
   }
@@ -183,10 +182,8 @@ class app {
   }
 
   asteroidHit({blast, asteroid}) {
-    console.log(asteroid)
-    // console.log(blast)
-    const explosion = new Explosion({scene: this.scene});
-    explosion.makeParticles(blast);
+    const explosion = new Explosion({scene: this.scene, blast, asteroid});
+    // explosion.makeParticles(blast);
     this.explosionArray.push(explosion);
   }
 }
