@@ -13,6 +13,11 @@ export const generateScene = (renderer) => {
 
   //SCENE
   const scene = new THREE.Scene();
+  
+  //BG
+  // const loader = new THREE.TextureLoader()
+  // const bgTexture = loader.load('bg.png');
+  // scene.background = bgTexture;
 
   //LIGHTS 0xffffff, 1, 1000, 1
   // const pointLight = new THREE.PointLight(
@@ -23,13 +28,13 @@ export const generateScene = (renderer) => {
   // pointLight.position.set(4000, 0, 0);
   // const ambientLight = new THREE.AmbientLight(0xffffff);
   const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-  directionalLight.position.set(4000, 0, 0);
+  directionalLight.position.set(2000, 0, 0);
   // directionalLight.target default is 0, 0, 0
   scene.add(directionalLight);
 
   //BLOOMPASS
   const bloomPass = new UnrealBloomPass(
-    new THREE.Vector2(window.innerWidth, window.innerHeight), 3, 1, 0
+    new THREE.Vector2(window.innerWidth, window.innerHeight), 1, 1, 0
   );
   bloomPass.strength = constants.light.bloompassStrength;
   bloomPass.radius = constants.light.bloompassRadius;

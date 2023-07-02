@@ -7,7 +7,7 @@ export class AsteroidController {
   driftSpeed: number;
   constructor(params) {
     this.params = params;
-    this.driftSpeed = 0.5;
+    this.driftSpeed = 1;
     this.init(params);
   }
 
@@ -19,14 +19,17 @@ export class AsteroidController {
 
         const asteroid = ast.clone();
         const scale = this.randomIntFromInterval(85, 250);
-        asteroid.scale.set(scale,scale,scale);
+        // asteroid.scale.set(scale,scale,scale);
+        asteroid.scale.set(100, 100, 100)
         // const [x, y, z] = Array(3).fill(0).map(() => THREE.MathUtils.randFloatSpread(8000));
-        asteroid.position.set(500, 500, 500);
+        // asteroid.position.set(2000, 0, 2600);
+        asteroid.position.copy(constants.asteroid.startingPosition);
 
         // BOUDING SPHERE FOR COLLISION DETECTION
         const asteroidBB = new THREE.Sphere(asteroid.position, scale)
-
-        const driftDirection = this.getRandomDriftDirection();
+        // const driftDirection = constants.asteroid.startingDriftDirection;
+        const driftDirection = new THREE.Vector3(1, 0, -1.5)
+        // const driftDirection = this.getRandomDriftDirection();
         asteroid.userData.driftDirection = driftDirection;
 
         this.params.scene.add(asteroid);
@@ -61,13 +64,13 @@ export class AsteroidController {
   update(asteroidEntities) {
     for (let i=0; i<asteroidEntities.length; i++) {
       let [x, y, z] = asteroidEntities[i].asteroid.position.toArray();
-      if (Math.abs(x) > 4000) x = -x;
-      if (Math.abs(y) > 4000) y = -y;
-      if (Math.abs(z) > 4000) z = -z;
+      if (Math.abs(x) > 2000) x = -x;
+      if (Math.abs(y) > 2000) y = -y;
+      if (Math.abs(z) > 2000) z = -z;
       asteroidEntities[i].asteroid.rotation.y += 0.00005;
       asteroidEntities[i].asteroid.position.set(x, y, z);
       asteroidEntities[i].asteroid.position.addScaledVector(asteroidEntities[i].driftDirection, this.driftSpeed)
       asteroidEntities[i].minimapAsteroid.position.copy(asteroidEntities[i].asteroid.position);
     }
   }
-};
+}

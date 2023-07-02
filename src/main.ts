@@ -6,27 +6,26 @@ import { ThirdPersonCamera } from './controllers/ThirdPersonCamera.ts';
 import { BasicCharacterController } from './controllers/BasicCharacterController.ts';
 import { AsteroidController } from './controllers/AsteroidController.ts';
 import { Blaster } from './controllers/Blaster.ts';
-import { loadEarth, updateEarth, loadSun, loadStars, loadBlackHole } from './mesh/meshes.ts';
+import { loadSun, loadStars, loadBlackHole } from './mesh/meshes.ts';
 import { constants } from './helpers/constants.ts';
 // import { getLoading } from './store/store.ts';
 import { generateMinimap } from './scenes/Minimap.ts';
 import { ParticleSystem } from './controllers/ParticleSystem.ts';
-import { Explosion } from './controllers/explosion.ts'
-import { EventBus } from './helpers/eventBus.ts';
+import { Explosion } from './controllers/Explosion.ts'
+import { EventBus } from './helpers/EventBus.ts';
 
 class app {
   renderer: THREE.WebGLRenderer;
   camera: THREE.PerspectiveCamera;
   scene: THREE.Scene;
+  // clock: THREE.Clock;
   previousRAF: number;
   composer: EffectComposer;
   thirdPersonCamera: ThirdPersonCamera;
   characterControls: BasicCharacterController;
   asteroidControls: AsteroidController;
-  earth: THREE.Mesh<THREE.SphereGeometry, THREE.MeshStandardMaterial>;
   mars: THREE.Mesh<THREE.SphereGeometry, THREE.MeshStandardMaterial>;
   sun: THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial>;
-  mercury: THREE.Mesh<THREE.SphereGeometry, THREE.MeshStandardMaterial>;
   blackHole: THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial>;
   opacity: number;
   minimapRenderer: THREE.WebGLRenderer;
@@ -37,14 +36,17 @@ class app {
   asteroidEntities: any;
   blaster: Blaster;
   blasterEntities: any;
-  particleSystem: ParticleSystem;
+  // particleSystem: ParticleSystem;
   // explosion: Explosion; 
   explosionArray: Explosion[];
+  particleArray: any[];
   constructor() {
     this.asteroidEntities = [];
     this.blasterEntities = [];
     this.explosionArray = [];
+    this.particleArray = [];
     EventBus.subscribe('asteroidHit', this.asteroidHit.bind(this));
+    // this.clock = new THREE.Clock();
     this.init();
   }
 
@@ -52,15 +54,14 @@ class app {
     this.renderer = new THREE.WebGLRenderer({
       canvas: document.querySelector('#bg') as HTMLCanvasElement   
     });
-    this.renderer.setClearColor('gray', .01);
+    // this.renderer.setClearColor('gray', .01);
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
+    
     // this.opacity = 0;
     const info = document.querySelector("#info");
     const textNode = document.createTextNode('Press W A S D to move, Q E to roll, ARROWS to look around, and MOUSE or SHIFT to BOOST.'); 
     info.appendChild(textNode);
-
-    this.earthBB = new THREE.Sphere();
 
     //RESIZE LISTENER
     window.addEventListener('resize', () => {
@@ -81,7 +82,6 @@ class app {
     const axesHelper = new THREE.AxesHelper( 500 );
     this.scene.add( axesHelper );
     // this.raycaster = new THREE.Raycaster();
-    // this.explosion = new Explosion({scene: this.scene});
 
 
     this.previousRAF = null;
@@ -94,24 +94,22 @@ class app {
   loadMeshes() {
     loadStars(this.scene);
     this.sun = loadSun();
-    this.earth = loadEarth();
-    this.earthBB = new THREE.Sphere(this.earth.position, constants.earth.radius);
+
 
     this.blackHole = loadBlackHole();
     this.scene.add(this.sun, this.blackHole);
     const minimapSun = this.sun.clone();
-    const minimapEarth = this.earth.clone();
-    this.minimapScene.add(minimapSun, minimapEarth);
-   
+    this.minimapScene.add(minimapSun);
+
     // special glowing box
-    const geometry = new THREE.BoxGeometry(200, 200, 200);
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    const cube = new THREE.Mesh(geometry, material);
-    cube.position.set(500, 0, 930)
-    // Add the cube to the scene
-    this.scene.add(cube);
-    const minmapCube = cube.clone();
-    this.minimapScene.add(minmapCube);
+    // const geometry = new THREE.BoxGeometry(200, 200, 200);
+    // const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    // const cube = new THREE.Mesh(geometry, material);
+    // cube.position.set(500, 0, 930)
+    // // Add the cube to the scene
+    // this.scene.add(cube);
+    // const minmapCube = cube.clone();
+    // this.minimapScene.add(minmapCube);
 
   }
 
@@ -139,7 +137,7 @@ class app {
       blasterEntities: this.blasterEntities 
     });
 
-    this.particleSystem  = new ParticleSystem({scene: this.scene})
+    // this.particleSystem  = new ParticleSystem({scene: this.scene})
 
   }
  
@@ -147,12 +145,7 @@ class app {
     requestAnimationFrame((t) => {
       if (this.previousRAF === null) this.previousRAF = t;
       this.RAF();
-      // this.raycaster.setFromCamera( new THREE.Vector2(), this.camera );
 
-      // const interesctions = this.raycaster.intersectObjects( this.scene.children );
-      // for ( let i = 0; i < interesctions.length; i ++ ) {
-      //   console.log(interesctions[i].object)
-      // }
       this.composer.render();
       this.minimapRenderer.render(this.minimapScene, this.minimapCamera);
 
@@ -163,16 +156,16 @@ class app {
 
   step(timeElapsed: number) {
     const timeElapsedS = timeElapsed * 0.001;
-    updateEarth(this.earth);
+    // console.log(timeElapsedS)
     if (this.asteroidControls) this.asteroidControls.update(this.asteroidEntities);
     if (this.characterControls) this.characterControls.update();
     if (this.thirdPersonCamera) this.thirdPersonCamera.update(timeElapsedS);
     if (this.blaster) this.blaster.update(this.asteroidEntities);
-    if (this.particleSystem) this.particleSystem.update();
+    // if (this.particleSystem) this.particleSystem.update();
     // if (this.explosion) this.explosion.update();
-    if (this.explosionArray.length) this.explosionArray.forEach((exp) => exp.update());
-    this.explosionArray = this.explosionArray.filter((exp) => exp.explosion);
-    // remove explosion from scene
+    // if (this.explosionArray.length) this.explosionArray.forEach((exp) => exp.update());
+    // this.explosionArray = this.explosionArray.filter((exp) => exp.explosion);
+    if (this.particleArray.length) this.particleArray.forEach((particle) => particle.update());
   }
 
   onWindowResize() {
@@ -182,12 +175,12 @@ class app {
   }
 
   asteroidHit({blast, asteroid}) {
-    const explosion = new Explosion({scene: this.scene, blast, asteroid});
-    // explosion.makeParticles(blast);
-    this.explosionArray.push(explosion);
+    // const explosion = new Explosion({scene: this.scene, blast, asteroid});
+    // this.explosionArray.push(explosion);
+    const particle = new ParticleSystem({scene: this.scene, blast, asteroid});
+    this.particleArray.push(particle);
   }
 }
-
 
 let _APP = null;
 
@@ -195,27 +188,3 @@ window.addEventListener('DOMContentLoaded', () => {
   _APP = new app();
 });
 
-
-
-
-// function _LerpOverFrames(frames, t) {
-//   const s = new THREE.Vector3(0, 0, 0);
-//   const e = new THREE.Vector3(100, 0, 0);
-//   const c = s.clone();
-
-//   for (let i = 0; i < frames; i++) {
-//     c.lerp(e, t);
-//   }
-//   return c;
-// }
-
-// function _TestLerp(t1, t2) {
-//   const v1 = _LerpOverFrames(100, t1);
-//   const v2 = _LerpOverFrames(50, t2);
-//   console.log(v1.x + ' | ' + v2.x);
-// }
-
-// _TestLerp(0.01, 0.01);
-// _TestLerp(1.0 / 100.0, 1.0 / 50.0);
-// _TestLerp(1.0 - Math.pow(0.3, 1.0 / 100.0), 
-//           1.0 - Math.pow(0.3, 1.0 / 50.0));

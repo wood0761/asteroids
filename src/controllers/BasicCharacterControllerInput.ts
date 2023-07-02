@@ -25,7 +25,7 @@ export class BasicCharacterControllerInput {
   }
 
   onKeyDown(event) {
-  	switch ( event.code ) {
+    switch ( event.code ) {
       case 'Space':
       case 'ShiftLeft':
       case 'ShiftRight': this.keys.shift = 1; break;
@@ -42,7 +42,6 @@ export class BasicCharacterControllerInput {
       case 'KeyQ': this.keys.rollLeft = 1; break;
       case 'KeyE': this.keys.rollRight = 1; break;
     }
-
   }
 
   onKeyUp(event) {
@@ -62,9 +61,6 @@ export class BasicCharacterControllerInput {
       case 'ArrowRight': this.keys.yawRight = 0; break;
       case 'KeyQ': this.keys.rollLeft = 0; break;
       case 'KeyE': this.keys.rollRight = 0; break;
-
     }
   }
-
-
-};
+}

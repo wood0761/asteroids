@@ -2,8 +2,7 @@ import * as THREE from 'three';
 import { BasicCharacterControllerInput } from './BasicCharacterControllerInput.ts';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { constants } from '../helpers/constants.ts';
-import { EventBus } from '../helpers/eventBus.ts';
-import { updateLoading } from '../store/store.ts';
+import { EventBus } from '../helpers/EventBus.ts';
 
 export class BasicCharacterController {
   params: any;
@@ -44,7 +43,7 @@ export class BasicCharacterController {
           child.receiveShadow = true;
         }
       });
-      this.target.scale.set(0.4, 0.4, 0.4);
+      // this.target.scale.set(0.4, 0.4, 0.4);
       this.params.scene.add(this.target);
       // this.params.shipBB = new THREE.Box3().setFromObject(this.target);
 
@@ -54,7 +53,7 @@ export class BasicCharacterController {
           child.material = new THREE.MeshBasicMaterial({ color: '#39FF14' });
         }
       })
-      this.minimapTarget.scale.set(300, 300, 300);
+      this.minimapTarget.scale.set(100, 100, 100);
       this.minimapScene.add(this.minimapTarget);
     });
 
@@ -105,10 +104,10 @@ export class BasicCharacterController {
     if (controlObject) {
       if (this.input.keys.shoot && this.cooldown === 0) {
         EventBus.publish('shoot', controlObject);
-        this.cooldown = 10;
+        this.cooldown = 20;
       }
 
-      moveVector.x = ( - this.input.keys.left + this.input.keys.right );
+      moveVector.x = ( - this.input.keys.left + this.input.keys.right);
 			moveVector.y = ( - this.input.keys.down + this.input.keys.up);
 			moveVector.z = ( - this.input.keys.forward + this.input.keys.back);
 
@@ -117,8 +116,8 @@ export class BasicCharacterController {
       if (moveVector.y !== 0) this.velocity.y = moveVector.y;
       if (moveVector.z !== 0) this.velocity.z = moveVector.z;
   
-			this.target.translateX( this.velocity.x * constants.ship.moveMultiplierX);
-			this.target.translateY( (this.velocity.y * this.moveMultiplier));  
+			this.target.translateX( this.velocity.x * this.moveMultiplier / 4);
+			this.target.translateY(this.velocity.y * this.moveMultiplier);  
 			this.target.translateZ( this.velocity.z * this.moveMultiplier);
 
       this.velocity.x *= this.deceleration;
@@ -130,9 +129,9 @@ export class BasicCharacterController {
 			rotationVector.y = ( - this.input.keys.yawRight + this.input.keys.yawLeft);
 			rotationVector.z = ( - this.input.keys.rollRight + this.input.keys.rollLeft);
 
-      if (rotationVector.x !== 0) this.tmpQuaternion.x = rotationVector.x * this.rotationMultiplier;
+      if (rotationVector.x !== 0) this.tmpQuaternion.x = rotationVector.x * this.rotationMultiplier * 2;
       if (rotationVector.y !== 0) this.tmpQuaternion.y = rotationVector.y * this.rotationMultiplier;
-      if (rotationVector.z !== 0) this.tmpQuaternion.z = rotationVector.z * this.rotationMultiplier * 2;
+      if (rotationVector.z !== 0) this.tmpQuaternion.z = rotationVector.z * this.rotationMultiplier * 2
 
       this.tmpQuaternion.x *= this.deceleration;
       this.tmpQuaternion.y *= this.deceleration;
@@ -147,20 +146,4 @@ export class BasicCharacterController {
 
     }
   }
-};
-
-      // this.target.quaternion.copy(this.tmpQuaternion)
-      // const EPS = 0.000001;
-
-      // if (
-			// 	this.position.distanceToSquared( this.target.position ) > EPS ||
-			// 	8 * ( 1 - this.tmpQuaternion.dot( this.target.quaternion ) ) > EPS
-			// ) {
-      //   this.target.quaternion.copy(new THREE.Quaternion(0, 0, 0, 1));
-			// 	// scope.dispatchEvent( _changeEvent );
-			// 	// lastQuaternion.copy( scope.object.quaternion );
-      //   // this.tmpQuaternion.copy()
-			// 	// lastPosition.copy( scope.object.position );
-      //   this.position.copy(this.target.position);
-
-			// }
+}

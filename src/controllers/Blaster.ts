@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { EventBus } from '../helpers/eventBus.ts';
+import { EventBus } from '../helpers/EventBus.ts';
 
 export class Blaster {
   entities: any;

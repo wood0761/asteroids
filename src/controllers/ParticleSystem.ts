@@ -1,73 +1,80 @@
 import * as THREE from 'three';
-import { EventBus } from '../helpers/eventBus.ts';
+import { EventBus } from '../helpers/EventBus.ts';
 
 export class ParticleSystem {
-  particles: any;
-  scene: any;
   positions: Float32Array;
+  explosion: boolean;
+  numParticles: number;
+  particles: THREE.BufferGeometry;
+  particleSystem: THREE.Points;
+  scene: THREE.Scene;
   constructor(params) {
     this.particles = null;
-    this.scene = null;
-    this.positions = new Float32Array(3);
+    this.numParticles = 1000;
+    this.scene = params.scene;
+    this.positions = new Float32Array(3 * 1000);
+    this.explosion = false;
+    // EventBus.subscribe('asteroidHit', this.addOne.bind(this));
 
-
-    EventBus.subscribe('asteroidHit', this.addOne.bind(this));
-
-    this.init(params);
+    this.makeParticles(params.blast, params.asteroid);
   }
 
-  init(params) {
+  makeParticles(blast, asteroid) {
     this.particles = new THREE.BufferGeometry();
-    
-    // const positions = new Float32Array(1000 * 3); // Three components (x, y, z) for each particle
+    const [ x, y, z ] = blast.position.toArray();
     // Set random positions for each particle
-    // for (let i = 0; i < 1000; i++) {
-    //   const index = i * 3;
-    //   positions[index] = Math.random() * 200 - 100; // x
-    //   positions[index + 1] = Math.random() * 200 - 100; // y
-    //   positions[index + 2] = Math.random() * 200 - 100; // z
-    // }
-    // const positions = [-250, 100, -700];
-    this.positions[0] = -250;
-    this.positions[1] = 100;
-    this.positions[2] = -700;
+    for (let i = 0; i < this.numParticles / 3; i++) {
+      const index = i * 3;
+      this.positions[index] = x + Math.random() * 5; // x
+      this.positions[index + 1] = y + Math.random() * 5; // y
+      this.positions[index + 2] = z + Math.random() * 5; // z
+    }
 
-    // new THREE.Vector3(-250, 100, -700)
     this.particles.setAttribute('position', new THREE.BufferAttribute(this.positions, 3));
-    
-    const particleMaterial = new THREE.PointsMaterial({ color: 0xff0000, size: 0.5 });
-    const particleSystem = new THREE.Points(this.particles, particleMaterial);
-    
+    const particleMaterial = new THREE.PointsMaterial({ color: 0xff0000 });
+    this.particleSystem = new THREE.Points(this.particles, particleMaterial);
     const textureLoader = new THREE.TextureLoader();
     const spriteTexture = textureLoader.load('explosion-single.png');
     
     const spriteMaterial = new THREE.PointsMaterial({
-      color: 0xffffff,
-      size: 20,
+      // color: 0xffffff,
+      size: 1,
+      // blendDst: THREE.OneMinusSrcAlphaFactor,
+      // blendSrc: THREE.SrcAlphaFactor,
       map: spriteTexture,
       blending: THREE.AdditiveBlending,
       transparent: true,
       depthTest: false,
     });
-    
-    particleSystem.material = spriteMaterial;
-    
-    params.scene.add(particleSystem);
-  }
 
-  addOne({blast}) {
-    this.positions
-    // this.positions.push(position);
+    this.particleSystem.material = spriteMaterial;
+    this.particleSystem.userData.driftDirection = asteroid.userData.driftDirection.clone();
+    this.scene.add(this.particleSystem);
+    this.explosion = true;
   }
 
   update() {
-    const positions = this.particles.getAttribute('position').array as Float32Array;
-    
-    for (let i = 0; i < positions.length; i++) {
-      let index = i * 3;
-      positions[index] += Math.random() * 0.2 - 0.1; // Update x position
-      positions[index + 1] += Math.random() * 0.2 - 0.1; // Update y position
-      positions[index + 2] += Math.random() * 0.2 - 0.1; // Update z position
+  
+    // const positions = this.particles.getAttribute('position').array as Float32Array;
+    if ((<THREE.PointsMaterial>this.particleSystem.material).opacity < 0.01) {
+      this.explosion = false;
+      return this.scene.remove(this.particleSystem);
+    }
+    (<THREE.PointsMaterial>this.particleSystem.material).opacity -= 0.01;
+    const v = this.particleSystem.userData.driftDirection.clone();
+
+    // const v = this.particleSystem.userData.driftDirection.clone();
+    for (let i = 0; i < this.positions.length / 3; i++) {
+      const index = i * 3;
+      const thang = new THREE.Vector3(this.positions[index], this.positions[index + 1], this.positions[index + 2]);
+      thang.addScaledVector(v, 0.5);
+      const [x, y, z] = thang.toArray();
+      this.positions[index] += x + Math.random() * 0.2 - 0.1; // Update x position
+      this.positions[index + 1] += y +  Math.random() * 0.2 - 0.1; // Update y position
+      this.positions[index + 2] += z + Math.random() * 0.2 - 0.1; // Update z position
+      // this.positions[index] += Math.random() * 0.2 - 0.1; // Update x position
+      // this.positions[index + 1] += Math.random() * 0.2 - 0.1; // Update y position
+      // this.positions[index + 2] += Math.random() * 0.2 - 0.1; // Update z position
     }
   
     this.particles.getAttribute('position').needsUpdate = true;
